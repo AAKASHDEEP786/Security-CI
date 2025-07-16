@@ -2,12 +2,12 @@ pipeline {
   agent any
 
   tools {
-    nodejs 'NodeJS 23'  // Ensure this is defined in Global Tool Config
+    nodejs 'NodeJS 23'  // Make sure it's configured in Jenkins > Global Tool Config
   }
 
   environment {
-    SCANNER_HOME = tool 'sonar-scanner'       // Optional but safe
-    SONAR_HOST_URL = 'http://localhost:9000'  // Update if running on another server
+    SCANNER_HOME = tool 'sonar-scanner'       // Jenkins sonar-scanner name
+    SONAR_HOST_URL = 'http://localhost:9000'  // Update if hosted externally
   }
 
   stages {
@@ -32,17 +32,17 @@ pipeline {
     }
 
     stage('SonarQube Scan') {
-  steps {
-    withSonarQubeEnv('sonar') {
-      sh '''$SCANNER_HOME/bin/sonar-scanner \
-        -Dsonar.projectKey=security-ci-demo \
-        -Dsonar.projectName="Security CI Demo" \
-        -Dsonar.sources=. \
-        -Dsonar.host.url=$SONAR_HOST_URL \
-        -Dsonar.sourceEncoding=UTF-8'''
+      steps {
+        withSonarQubeEnv('sonar') {
+          sh '''$SCANNER_HOME/bin/sonar-scanner \
+            -Dsonar.projectKey=security-ci-demo \
+            -Dsonar.projectName="Security CI Demo" \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.sourceEncoding=UTF-8'''
+        }
+      }
     }
-  }
-}
 
     stage('Quality Gate Check') {
       steps {
@@ -51,10 +51,11 @@ pipeline {
         }
       }
     }
+  }
 
   post {
     always {
-      archiveArtifacts artifacts: 'zap-report.html', allowEmptyArchive: true
+      echo 'Pipeline finished. Check SonarQube for analysis results.'
     }
   }
 }
