@@ -2,7 +2,7 @@ pipeline {
   agent any
 
   tools {
-    nodejs "NodeJS-18"   // Set this in Jenkins global tools
+    nodejs "NodeJS 23"   // Set this in Jenkins global tools
   }
 
   environment {
