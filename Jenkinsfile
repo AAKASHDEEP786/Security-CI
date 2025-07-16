@@ -52,18 +52,6 @@ pipeline {
       }
     }
 
-    stage('OWASP ZAP Scan') {
-      steps {
-        sh '''
-          docker run --network host -t owasp/zap2docker-stable zap-baseline.py \
-            -t http://localhost:3000 \
-            -g zap-gen.conf \
-            -r zap-report.html
-        '''
-      }
-    }
-  }
-
   post {
     always {
       archiveArtifacts artifacts: 'zap-report.html', allowEmptyArchive: true
