@@ -2,14 +2,22 @@ pipeline {
   agent any
 
   tools {
-    nodejs "NodeJS 23"   // Set this in Jenkins global tools
+    nodejs 'NodeJS 23'  // Ensure this is defined in Global Tool Config
   }
 
   environment {
-    SONAR_HOST_URL = 'http://localhost:9000' // Change if hosted elsewhere
+    SCANNER_HOME = tool 'sonar-scanner'       // Optional but safe
+    SONAR_HOST_URL = 'http://localhost:9000'  // Update if running on another server
   }
 
   stages {
+    stage('Checkout Code') {
+      steps {
+        git branch: 'main',
+            url: 'https://github.com/AAKASHDEEP786/Security-CI.git'
+      }
+    }
+
     stage('Install Dependencies') {
       steps {
         sh 'npm install'
@@ -25,8 +33,21 @@ pipeline {
 
     stage('SonarQube Scan') {
       steps {
-        withSonarQubeEnv('MySonarQube') {
-          sh 'sonar-scanner'
+        withSonarQubeEnv('sonar') {
+          sh '''$SCANNER_HOME/bin/sonar-scanner \
+            -Dsonar.projectKey=security-ci-demo \
+            -Dsonar.projectName=Security CI Demo \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=$SONAR_HOST_URL \
+            -Dsonar.sourceEncoding=UTF-8'''
+        }
+      }
+    }
+
+    stage('Quality Gate Check') {
+      steps {
+        timeout(time: 1, unit: 'HOURS') {
+          waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
         }
       }
     }
@@ -34,7 +55,10 @@ pipeline {
     stage('OWASP ZAP Scan') {
       steps {
         sh '''
-          docker run --network host -t owasp/zap2docker-stable zap-baseline.py -t http://localhost:3000 -g gen.conf -r zap-report.html
+          docker run --network host -t owasp/zap2docker-stable zap-baseline.py \
+            -t http://localhost:3000 \
+            -g zap-gen.conf \
+            -r zap-report.html
         '''
       }
     }
