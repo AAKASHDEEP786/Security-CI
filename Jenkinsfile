@@ -32,17 +32,17 @@ pipeline {
     }
 
     stage('SonarQube Scan') {
-      steps {
-        withSonarQubeEnv('sonar') {
-          sh '''$SCANNER_HOME/bin/sonar-scanner \
-            -Dsonar.projectKey=security-ci-demo \
-            -Dsonar.projectName=Security CI Demo \
-            -Dsonar.sources=. \
-            -Dsonar.host.url=$SONAR_HOST_URL \
-            -Dsonar.sourceEncoding=UTF-8'''
-        }
-      }
+  steps {
+    withSonarQubeEnv('sonar') {
+      sh '''$SCANNER_HOME/bin/sonar-scanner \
+        -Dsonar.projectKey=security-ci-demo \
+        -Dsonar.projectName="Security CI Demo" \
+        -Dsonar.sources=. \
+        -Dsonar.host.url=$SONAR_HOST_URL \
+        -Dsonar.sourceEncoding=UTF-8'''
     }
+  }
+}
 
     stage('Quality Gate Check') {
       steps {
